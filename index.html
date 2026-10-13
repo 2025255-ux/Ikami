@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="preconnect" href__="https://fonts.googleapis.com" />
+<link rel="preconnect" href__="https://fonts.gstatic.com" crossorigin />
+<link href__="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;700;800&display=swap" rel="stylesheet" />
+<title>ゆいなの日常</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Shippori Mincho', serif; }
+  .mincho { font-family: 'Shippori Mincho', serif; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+  .fade-in { animation: fadeIn 0.4s ease forwards; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .pop-in { animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+  @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+  .slide-up { animation: slideUp 0.5s ease forwards; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  input { outline: none; }
+  button { cursor: pointer; font-family: inherit; border: none; background: none; }
+  table { border-collapse: collapse; width: 100%; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "framer-motion": "https://esm.sh/framer-motion@11.16.4?external=react,react-dom"
+  }
+}
+</script>
+<script type="module">
+import React, { useState } from "react";
+import { createRoot } from "react-dom/client";
+import { motion, AnimatePresence } from "framer-motion";
+
+const STORAGE_KEY = "yuina_answers";
+
+function loadAnswers() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; }
+}
+function saveAnswer(food, color) {
+  const list = loadAnswers();
+  list.unshift({ food, color, date: new Date().toISOString() });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+}
+
+function App() {
+  const [stage, setStage] = useState("hero");
+  const [food, setFood] = useState("");
+  const [color, setColor] = useState("");
+  const [answers, setAnswers] = useState([]);
+  const [showKidding, setShowKidding] = useState(false);
+
+  const handleSubmit = () => {
+    if (!food.trim() || !color.trim()) return;
+    saveAnswer(food.trim(), color.trim());
+
+    if (food.trim() === "ヤモリ" && color.trim() === "虹色") {
+      setAnswers(loadAnswers());
+      setStage("secret");
+      return;
+    }
+    setStage("error");
+    setShowKidding(false);
+    setTimeout(() => setShowKidding(true), 1800);
+  };
+
+  const resetAll = () => {
+    setStage("hero"); setFood(""); setColor(""); setShowKidding(false);
+  };
+
+  const inputStyle = {
+    background: "transparent", border: "none", borderBottom: "2px solid #1A1A1B",
+    padding: "12px 0", fontSize: "1.125rem", width: "100%", color: "#1A1A1B",
+    fontFamily: "'Shippori Mincho', serif"
+  };
+
+  return React.createElement("div", { style: { minHeight: "100vh", background: "#F9F7F2", color: "#1A1A1B" } },
+
+    // Hero
+    stage === "hero" && React.createElement("div", {
+      className: "fade-in",
+      style: { position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", padding: "2rem 1.5rem" }
+    },
+      React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", width: "100%" } },
+        React.createElement("div", { style: { fontSize: "0.75rem", letterSpacing: "0.3em", textTransform: "uppercase", opacity: 0.6 } }, "YUINA'S ARCHIVE"),
+        React.createElement("div", {
+          style: { display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer" },
+          onClick: () => setStage("form")
+        },
+          React.createElement("span", { className: "mincho", style: { fontWeight: 700, fontSize: "clamp(1.5rem, 3vw, 2.25rem)" } }, "見るにはこちら→"),
+          React.createElement("span", { style: { fontSize: "clamp(2rem, 4vw, 3rem)" } }, "🐈‍⬛")
+        )
+      ),
+      React.createElement("div", { style: { flex: 1, display: "flex", alignItems: "center" } },
+        React.createElement(motion.h1, {
+          initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { delay: 0.2 },
+          className: "mincho",
+          style: { fontWeight: 800, lineHeight: 1.1, fontSize: "clamp(3.5rem, 12vw, 9rem)", letterSpacing: "0.02em" }
+        }, "ゆいなの", React.createElement("br"), "日常")
+      ),
+      React.createElement("div", { style: { fontSize: "0.875rem", opacity: 0.5, letterSpacing: "0.1em" } }, "— ちょっとした日々の記録 —")
+    ),
+
+    // Form
+    React.createElement(AnimatePresence, null, stage === "form" && React.createElement(motion.div, {
+      key: "form", initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 },
+      style: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }
+    },
+      React.createElement(motion.div, {
+        initial: { scale: 0.95, y: 20 }, animate: { scale: 1, y: 0 },
+        style: { width: "100%", maxWidth: "36rem" }
+      },
+        React.createElement("div", { className: "mincho", style: { fontSize: "0.875rem", opacity: 0.7, marginBottom: "2rem", textAlign: "center", userSelect: "none" } }, "Googleアカウントでログイン"),
+        React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "2.5rem" } },
+          React.createElement("div", null,
+            React.createElement("label", { className: "mincho", style: { display: "block", marginBottom: "0.75rem", fontSize: "1.125rem" } }, "メールアドレス"),
+            React.createElement("input", { value: food, onChange: e => setFood(e.target.value), style: inputStyle })
+          ),
+          React.createElement("div", null,
+            React.createElement("label", { className: "mincho", style: { display: "block", marginBottom: "0.75rem", fontSize: "1.125rem" } }, "パスワード"),
+            React.createElement("input", { type: "password", value: color, onChange: e => setColor(e.target.value), style: inputStyle })
+          )
+        ),
+        React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "3rem" } },
+          React.createElement("button", { onClick: () => setStage("hero"), style: { fontSize: "0.875rem", opacity: 0.6 } }, "← 戻る"),
+          React.createElement("button", {
+            onClick: handleSubmit, disabled: !food.trim() || !color.trim(),
+            style: {
+              padding: "1rem 2.5rem", fontSize: "1.125rem", borderRadius: "9999px",
+              background: "#1A1A1B", color: "#F9F7F2", cursor: (!food.trim() || !color.trim()) ? "not-allowed" : "pointer",
+              opacity: (!food.trim() || !color.trim()) ? 0.5 : 1
+            }
+          }, "次へ →")
+        )
+      )
+    )),
+
+    // Error
+    React.createElement(AnimatePresence, null, stage === "error" && React.createElement(motion.div, {
+      key: "error", initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 },
+      style: { minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "1.5rem", background: "#FF4D00", color: "#fff" }
+    },
+      React.createElement(motion.div, {
+        initial: { scale: 0.8, opacity: 0 }, animate: { scale: 1, opacity: 1 }, transition: { type: "spring", stiffness: 200 },
+        style: { textAlign: "center" }
+      },
+        React.createElement("div", { className: "mono", style: { fontWeight: 700, fontSize: "clamp(2rem, 7vw, 5rem)", lineHeight: 1.1 } }, "SYSTEM ERROR 404"),
+        React.createElement("div", { className: "mono", style: { marginTop: "1rem", fontSize: "clamp(1rem, 2.5vw, 1.75rem)", opacity: 0.9 } }, "EMOTION NOT FOUND")
+      ),
+      showKidding && React.createElement("div", { className: "slide-up", style: { marginTop: "4rem", textAlign: "center" } },
+        React.createElement("p", { className: "mincho", style: { fontStyle: "italic", fontSize: "clamp(1.1rem, 2.5vw, 1.5rem)" } }, "なーんてね。冗談だよ 😸"),
+        React.createElement("button", { onClick: resetAll, style: { marginTop: "1.5rem", textDecoration: "underline", textUnderlineOffset: "4px", opacity: 0.9 } }, "最初に戻る")
+      )
+    )),
+
+    // Secret
+    React.createElement(AnimatePresence, null, stage === "secret" && React.createElement(motion.div, {
+      key: "secret", initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 },
+      style: { minHeight: "100vh", display: "flex", flexDirection: "column", padding: "2rem 1.5rem", background: "#4A90E2", color: "#fff" }
+    },
+      React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "2rem" } },
+        React.createElement("div", { style: { fontSize: "0.75rem", letterSpacing: "0.3em", textTransform: "uppercase", opacity: 0.8 } }, "SECRET ARCHIVE"),
+        React.createElement("button", { onClick: resetAll, style: { fontSize: "0.875rem", textDecoration: "underline", textUnderlineOffset: "4px", opacity: 0.9 } }, "← 戻る")
+      ),
+      React.createElement("h2", { className: "mincho", style: { marginBottom: "0.5rem", fontSize: "clamp(1.75rem, 4vw, 2.5rem)" } }, "みんなの回答"),
+      React.createElement("p", { style: { opacity: 0.8, marginBottom: "2rem", fontSize: "0.875rem" } }, "裏技発動！これまでの全回答だよ 🌈"),
+      answers.length === 0
+        ? React.createElement("div", { style: { padding: "5rem 0", textAlign: "center", opacity: 0.8 } }, "まだ回答がありません")
+        : React.createElement("div", {
+            style: { borderRadius: "0.5rem", overflow: "hidden", border: "1px solid rgba(255,255,255,0.4)", background: "rgba(255,255,255,0.1)" }
+          },
+            React.createElement("table", null,
+              React.createElement("thead", null,
+                React.createElement("tr", { style: { borderBottom: "1px solid rgba(255,255,255,0.4)" } },
+                  React.createElement("th", { style: { padding: "0.75rem", textAlign: "left", color: "#fff", fontWeight: 700 } }, "好きな食べ物"),
+                  React.createElement("th", { style: { padding: "0.75rem", textAlign: "left", color: "#fff", fontWeight: 700 } }, "好きな色")
+                )
+              ),
+              React.createElement("tbody", null,
+                answers.map((a, i) => React.createElement("tr", {
+                  key: i, style: { borderBottom: "1px solid rgba(255,255,255,0.2)" }
+                },
+                  React.createElement("td", { style: { padding: "0.75rem", color: "#fff" } }, a.food),
+                  React.createElement("td", { style: { padding: "0.75rem", color: "#fff" } }, a.color)
+                ))
+              )
+            )
+          ),
+      React.createElement("div", { style: { marginTop: "1.5rem", fontSize: "0.875rem", opacity: 0.7 } }, "全 " + answers.length + " 件の回答")
+    ))
+  );
+}
+
+createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
